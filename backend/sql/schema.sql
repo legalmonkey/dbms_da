@@ -1,0 +1,132 @@
+DROP TABLE HasResult CASCADE CONSTRAINTS;
+DROP TABLE OrderIncludesTest CASCADE CONSTRAINTS;
+DROP TABLE Report CASCADE CONSTRAINTS;
+DROP TABLE Sample CASCADE CONSTRAINTS;
+DROP TABLE TestOrder CASCADE CONSTRAINTS;
+DROP TABLE RadiologyTest CASCADE CONSTRAINTS;
+DROP TABLE PathologyTest CASCADE CONSTRAINTS;
+DROP TABLE Pathologist CASCADE CONSTRAINTS;
+DROP TABLE LabTechnician CASCADE CONSTRAINTS;
+DROP TABLE Test CASCADE CONSTRAINTS;
+DROP TABLE LabStaff CASCADE CONSTRAINTS;
+DROP TABLE Laboratory CASCADE CONSTRAINTS;
+DROP TABLE Doctor CASCADE CONSTRAINTS;
+DROP TABLE Patient_Contact CASCADE CONSTRAINTS;
+DROP TABLE Patient CASCADE CONSTRAINTS;
+
+CREATE TABLE Patient (
+    Patient_ID VARCHAR2(20) PRIMARY KEY,
+    First_Name VARCHAR2(50) NOT NULL,
+    Last_Name VARCHAR2(50) NOT NULL,
+    DOB DATE NOT NULL,
+    Gender CHAR(1) CHECK (Gender IN ('M', 'F', 'O'))
+);
+
+CREATE TABLE Patient_Contact (
+    Patient_ID VARCHAR2(20),
+    Contact_No VARCHAR2(15),
+    PRIMARY KEY (Patient_ID, Contact_No),
+    FOREIGN KEY (Patient_ID) REFERENCES Patient(Patient_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE Doctor (
+    Doctor_ID VARCHAR2(20) PRIMARY KEY,
+    Name VARCHAR2(100) NOT NULL,
+    Specialization VARCHAR2(100) NOT NULL
+);
+
+CREATE TABLE Laboratory (
+    Lab_ID VARCHAR2(20) PRIMARY KEY,
+    Lab_Name VARCHAR2(100) NOT NULL,
+    Location VARCHAR2(100) NOT NULL,
+    Contact_No VARCHAR2(15)
+);
+
+CREATE TABLE LabStaff (
+    Staff_ID VARCHAR2(20) PRIMARY KEY,
+    Name VARCHAR2(100) NOT NULL,
+    Shift VARCHAR2(20) CHECK (Shift IN ('Morning', 'Evening', 'Night', 'General'))
+);
+
+CREATE TABLE Test (
+    Test_ID VARCHAR2(20) PRIMARY KEY,
+    Test_Name VARCHAR2(100) NOT NULL,
+    Category VARCHAR2(50) NOT NULL,
+    Price NUMBER(10, 2) NOT NULL CHECK (Price >= 0)
+);
+
+CREATE TABLE LabTechnician (
+    Staff_ID VARCHAR2(20) PRIMARY KEY,
+    Certification VARCHAR2(100) NOT NULL,
+    FOREIGN KEY (Staff_ID) REFERENCES LabStaff(Staff_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE Pathologist (
+    Staff_ID VARCHAR2(20) PRIMARY KEY,
+    License_No VARCHAR2(50) NOT NULL UNIQUE,
+    Qualification VARCHAR2(100) NOT NULL,
+    FOREIGN KEY (Staff_ID) REFERENCES LabStaff(Staff_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE PathologyTest (
+    Test_ID VARCHAR2(20) PRIMARY KEY,
+    Specimen_Type VARCHAR2(50) NOT NULL,
+    FOREIGN KEY (Test_ID) REFERENCES Test(Test_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE RadiologyTest (
+    Test_ID VARCHAR2(20) PRIMARY KEY,
+    Imaging_Modality VARCHAR2(50) NOT NULL,
+    FOREIGN KEY (Test_ID) REFERENCES Test(Test_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE TestOrder (
+    Order_ID VARCHAR2(20) PRIMARY KEY,
+    Patient_ID VARCHAR2(20) NOT NULL,
+    Doctor_ID VARCHAR2(20) NOT NULL,
+    Order_Date DATE NOT NULL,
+    Status VARCHAR2(20) DEFAULT 'Pending' CHECK (Status IN ('Pending', 'Processing', 'Completed', 'Cancelled')),
+    FOREIGN KEY (Patient_ID) REFERENCES Patient(Patient_ID),
+    FOREIGN KEY (Doctor_ID) REFERENCES Doctor(Doctor_ID)
+);
+
+CREATE TABLE Sample (
+    Order_ID VARCHAR2(20),
+    Sample_No VARCHAR2(20),
+    Collection_Date DATE NOT NULL,
+    Sample_Type VARCHAR2(50) NOT NULL,
+    Lab_ID VARCHAR2(20) NOT NULL,
+    Tech_ID VARCHAR2(20) NOT NULL,
+    PRIMARY KEY (Order_ID, Sample_No),
+    FOREIGN KEY (Order_ID) REFERENCES TestOrder(Order_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Lab_ID) REFERENCES Laboratory(Lab_ID),
+    FOREIGN KEY (Tech_ID) REFERENCES LabTechnician(Staff_ID)
+);
+
+CREATE TABLE Report (
+    Report_ID VARCHAR2(20) PRIMARY KEY,
+    Order_ID VARCHAR2(20) UNIQUE NOT NULL,
+    Report_Date DATE NOT NULL,
+    Pathologist_ID VARCHAR2(20) NOT NULL,
+    FOREIGN KEY (Order_ID) REFERENCES TestOrder(Order_ID),
+    FOREIGN KEY (Pathologist_ID) REFERENCES Pathologist(Staff_ID)
+);
+
+CREATE TABLE OrderIncludesTest (
+    Order_ID VARCHAR2(20),
+    Test_ID VARCHAR2(20),
+    PRIMARY KEY (Order_ID, Test_ID),
+    FOREIGN KEY (Order_ID) REFERENCES TestOrder(Order_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Test_ID) REFERENCES Test(Test_ID)
+);
+
+CREATE TABLE HasResult (
+    Report_ID VARCHAR2(20),
+    Test_ID VARCHAR2(20),
+    Observed_Value VARCHAR2(50) NOT NULL,
+    Unit VARCHAR2(20),
+    Remark VARCHAR2(100),
+    PRIMARY KEY (Report_ID, Test_ID),
+    FOREIGN KEY (Report_ID) REFERENCES Report(Report_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Test_ID) REFERENCES Test(Test_ID)
+);

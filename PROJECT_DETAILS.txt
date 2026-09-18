@@ -1,0 +1,601 @@
+================================================================================
+                    MERIDIAN DIAGNOSTICS - LIS / LIMS
+       DIAGNOSTIC LABORATORY TEST & REPORT MANAGEMENT SYSTEM
+                    COMPREHENSIVE PROJECT SPECIFICATION
+================================================================================
+Generated Date: September 2026
+Repository: dbms-diagnostic-lab-frontend
+Application Name: Meridian Diagnostics (lab-lims)
+Architecture: Single-Page Application (SPA) / React 19 Frontend with Dual-Mode API Seam
+Version: 1.0.0-production-ready foundation
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & ARCHITECTURAL OVERVIEW
+2. COMPLETE FILE AND DIRECTORY STRUCTURE
+3. TECHNOLOGY STACK & DEPENDENCY INVENTORY
+4. DATABASE SCHEMA & DOMAIN DATA MODELS (DBMS MAPPING)
+5. SYSTEM ROLES, PERMISSIONS & WORKSPACES
+6. CORE FUNCTIONAL MODULES & FEATURES
+7. API CONTRACT & SERVICE LAYER (THE INTEGRATION SEAM)
+8. MOCK DATA ENGINE & PERSISTENCE
+9. DESIGN SYSTEM, UI COMPONENTS & LOCALIZATION
+10. ROUTE HIERARCHY & NAVIGATION MAP
+11. GETTING STARTED, BUILD & DEPLOYMENT INSTRUCTIONS
+
+================================================================================
+1. EXECUTIVE SUMMARY & ARCHITECTURAL OVERVIEW
+================================================================================
+Meridian Diagnostics (lab-lims) is a modern, high-performance web frontend
+engineered for clinical diagnostic laboratories, pathology centers, and hospital
+diagnostic wings. 
+
+Key Architectural Highlights:
+1. Complete Separation of Concerns (Frontend-Backend Decoupling):
+   - Designed strictly as a client-side interface that mirrors an exact relational
+     DBMS schema.
+   - Built around an architectural "Seam" (`src/services/http.ts`). All data access
+     flows through standard service methods that either communicate with an in-memory
+     mock database or issue real REST calls against `VITE_API_BASE_URL`.
+   - Switching between mock data and the live production backend requires changing
+     a single environment variable (`VITE_API_MODE=live`), with zero changes to
+     components, hooks, or state logic.
+
+2. Strict Database-First Schema Alignment:
+   - Field names directly match the SQL database schema (`Patient_ID`, `Test_ID`,
+     `Order_ID`, `Sample_No`, `Report_ID`, `Staff_ID`, `Lab_ID`, `Doctor_ID`).
+   - Prevents impedance mismatch when connecting to the relational backend.
+
+3. Role-Driven Clinical Workflows:
+   - Accommodates five operational divisions across four distinct user roles:
+     Patients, Lab Technicians, Pathologists, and System Administrators.
+   - Built with role-specific landing workspaces, granular permission route guards,
+     and contextual clinical actions.
+
+4. Production-Grade UX & Accessibility:
+   - WCAG AA compliant contrast in both Light and Dark themes.
+   - Multi-channel communication (color is never used alone; accompanied by text
+     labels, symbols, and directional indicators).
+   - Zero-dependency PDF generation leveraging browser print stylesheets and A4
+     clinical report layout.
+
+================================================================================
+2. COMPLETE FILE AND DIRECTORY STRUCTURE
+================================================================================
+Below is the full file tree of the project (excluding node_modules and .git):
+
+c:\dbms-diagnostic-lab-frontend\
+├── .claude\
+├── .env                                  # Environment variables (API mode, Base URL)
+├── .gitignore                            # Git ignore rules
+├── .oxlintrc.json                        # Oxlint configuration
+├── docs\
+│   └── api-contract.md                   # Frozen REST API contract for backend team
+├── FRONTEND_HANDOFF.md                   # Original frontend architecture & handoff notes
+├── index.html                            # HTML entry point with Inter font & meta tags
+├── LICENSE                               # MIT License file
+├── package-lock.json                     # NPM dependency lockfile
+├── package.json                          # Project manifest, scripts, and dependencies
+├── public\
+│   ├── favicon.svg                       # Laboratory flask favicon
+│   └── icons.svg                         # Sprite assets
+├── README.md                             # Project overview and quickstart
+├── src\
+│   ├── app\
+│   │   ├── AppErrorBoundary.tsx          # Catch-all error boundary with reload
+│   │   ├── AuthProvider.tsx              # Session context & role-based demo auth
+│   │   ├── demoUsers.ts                  # Seeded demo profiles (Admin, Tech, Path, Patient)
+│   │   ├── guards.tsx                    # Route guards: RequireAuth, RequirePermission, RequireRole
+│   │   ├── navigation.ts                 # Role-aware sidebar navigation definition
+│   │   ├── Providers.tsx                 # Root React Query, Theme, Auth, and Toast provider stack
+│   │   ├── queryClient.ts                # TanStack Query client configuration & retry policies
+│   │   ├── RoleLanding.tsx               # Root redirector routing users to respective workspace
+│   │   └── router.tsx                    # React Router 7 route definitions and guards
+│   ├── components\
+│   │   ├── data\
+│   │   │   ├── ConfirmDialog.tsx         # Destructive action modal (delete/cancel)
+│   │   │   ├── EmptyState.tsx            # Contextual empty state placeholder
+│   │   │   ├── ErrorState.tsx            # API error display with retry trigger
+│   │   │   ├── Pagination.tsx            # Page selector with previous/next controls
+│   │   │   ├── QueryState.tsx            # Wrapper handling TanStack Query loading/error/data
+│   │   │   ├── RowActions.tsx            # Dropdown menu for table row actions
+│   │   │   └── Table.tsx                 # Accessible table primitives (Table, Th, Td, Tr)
+│   │   ├── domain\
+│   │   │   ├── PulseDot.tsx              # Animated status pulse indicator
+│   │   │   ├── RemarkIndicator.tsx       # Normal / Elevated / Critical clinical pill
+│   │   │   ├── ReportDocument.tsx        # Formal A4 diagnostic report layout (shared with print)
+│   │   │   ├── RolePill.tsx              # Color-coded badge for system roles
+│   │   │   └── StatusBadge.tsx           # Domain badges (OrderStatusBadge, SampleStatusBadge)
+│   │   ├── landing\
+│   │   │   ├── AeroShards.css            # Styles for 3D glass shard shaders
+│   │   │   ├── AeroShards.tsx            # WebGPU interactive floating glass shard background
+│   │   │   ├── AeroShardsCanvas.tsx      # Canvas 2D fallback when WebGPU is unavailable
+│   │   │   ├── ChromaGrid.tsx            # Gradient grid background layer
+│   │   │   └── Spotlight.tsx             # Interactive mouse hover illumination effect
+│   │   ├── layout\
+│   │   │   ├── AppShell.tsx              # Primary layout with sidebar, topbar, and main viewport
+│   │   │   ├── Brand.tsx                 # Meridian Diagnostics logo and wordmark
+│   │   │   ├── index.ts                  # Layout exports
+│   │   │   ├── PageHeader.tsx            # Header component with breadcrumbs, actions, meta
+│   │   │   ├── RoleSwitcher.tsx          # Demo toolbar switcher to rapidly toggle roles
+│   │   │   ├── Sidebar.tsx               # Collapsible navigation drawer and sidebar
+│   │   │   ├── ThemeToggle.tsx           # Light / Dark theme selector button
+│   │   │   └── Topbar.tsx                # Sticky top bar with breadcrumbs and user profile
+│   │   ├── reactbits\
+│   │   │   ├── CountUp.tsx               # Animated numeric counter component
+│   │   │   ├── DecryptedText.tsx         # Cyber-style decryption text effect
+│   │   │   ├── SpotlightCard.css         # Spotlight card CSS styling
+│   │   │   ├── SpotlightCard.tsx         # Dynamic glowing card container
+│   │   │   ├── Stepper.css               # Multi-step wizard styling
+│   │   │   └── Stepper.tsx               # Multi-step progress wizard component
+│   │   ├── ui\
+│   │   │   ├── Badge.tsx                 # Status and tag badge component
+│   │   │   ├── Button.tsx                # Primary, secondary, subtle, ghost, danger buttons
+│   │   │   ├── Checkbox.tsx              # Radix UI checkbox primitive
+│   │   │   ├── Dialog.tsx                # Radix UI accessible modal dialog
+│   │   │   ├── DropdownMenu.tsx          # Radix UI popover dropdown menu
+│   │   │   ├── Field.tsx                 # Form field container with label, error, hint
+│   │   │   ├── index.ts                  # UI primitive exports
+│   │   │   ├── Input.tsx                 # Text, search, date, and number input primitive
+│   │   │   ├── Kbd.tsx                   # Keyboard shortcut badge
+│   │   │   ├── Popover.tsx               # Radix UI floating popover
+│   │   │   ├── RadioGroup.tsx            # Radix UI radio options
+│   │   │   ├── Select.tsx                # Radix UI dropdown select with custom styling
+│   │   │   ├── Separator.tsx             # Semantic horizontal/vertical dividing line
+│   │   │   ├── Skeleton.tsx              # Shimmer loading placeholders for cards/tables
+│   │   │   ├── Spinner.tsx               # SVG loading indicator
+│   │   │   ├── Surface.tsx               # Card / container surface with header support
+│   │   │   ├── Switch.tsx                # Accessible toggle switch
+│   │   │   ├── Tabs.tsx                  # Radix UI segmented tab controls
+│   │   │   ├── Textarea.tsx              # Multiline text input
+│   │   │   ├── Toast.tsx                 # Notification toast provider and hooks
+│   │   │   └── Tooltip.tsx               # Hover tooltip helper
+│   │   └── workspace\
+│   │       ├── Breakdown.tsx             # Segmented percentage distribution bar
+│   │       ├── MetricTile.tsx            # KPI statistic summary card
+│   │       ├── ModuleCard.tsx            # Navigation gateway card for workspace portals
+│   │       └── WorkspaceHeader.tsx       # Hero header block for role dashboards
+│   ├── features\
+│   │   ├── admin\
+│   │   │   ├── LabFormDialog.tsx         # Modal dialog for creating/editing laboratories
+│   │   │   └── StaffFormDialog.tsx       # Modal dialog for staff with technician/pathologist fields
+│   │   ├── catalogue\
+│   │   │   └── TestFormDialog.tsx        # Modal dialog for creating/editing diagnostic tests
+│   │   └── patients\
+│   │       └── PatientFormDialog.tsx     # Quick create/edit modal for patient records
+│   ├── hooks\
+│   │   ├── useAuth.ts                    # Hook exposing session, role, and permission checker
+│   │   ├── useMediaQuery.ts              # Responsive viewport breakpoint detection hook
+│   │   ├── usePatientScope.ts            # Hook enforcing patient data boundary checks
+│   │   └── useTheme.ts                   # Hook for light/dark theme toggling and persistence
+│   ├── lib\
+│   │   ├── cn.ts                         # ClassName utility combining clsx and twMerge
+│   │   └── format.ts                     # en-IN Indian localization (currency, date, age, time)
+│   ├── mock\
+│   │   ├── db.ts                         # In-memory mutable store with sessionStorage backup
+│   │   ├── handlers.ts                   # 30+ simulated REST endpoint handlers
+│   │   ├── latency.ts                    # Latency simulation (180-450ms) and fault injection
+│   │   ├── rng.ts                        # Seeded deterministic pseudo-random number generator
+│   │   └── seed.ts                       # Complete realistic dataset generator
+│   ├── pages\
+│   │   ├── workspace\
+│   │   │   ├── AdminWorkspacePage.tsx       # Administrator command center & analytics
+│   │   │   ├── PathologistWorkspacePage.tsx # Pathologist pending queue & authorized reports
+│   │   │   ├── PatientWorkspacePage.tsx     # Patient personal health portal
+│   │   │   └── TechnicianWorkspacePage.tsx  # Technician sample collection dispatch board
+│   │   ├── CataloguePage.tsx             # Interactive test catalogue directory
+│   │   ├── ForbiddenPage.tsx             # 403 Access Denied view
+│   │   ├── LaboratoriesPage.tsx          # Laboratory facilities directory & CRUD
+│   │   ├── LandingPage.tsx               # Interactive 3D hero landing & role selector
+│   │   ├── NotFoundPage.tsx              # 404 Route Not Found view
+│   │   ├── OrderBookingPage.tsx          # Test order booking wizard with real-time cart
+│   │   ├── OrderDetailPage.tsx           # Detailed view of a single order & associated samples
+│   │   ├── OrdersPage.tsx                # Test orders management list with cancel/delete
+│   │   ├── PatientProfilePage.tsx        # Comprehensive patient history & timeline
+│   │   ├── PatientRegisterPage.tsx       # 3-step patient registration stepper
+│   │   ├── PatientsPage.tsx              # Patient directory with search and pagination
+│   │   ├── ReportPrintPage.tsx           # Isolated A4 print layout for reports
+│   │   ├── ReportsPage.tsx               # Issued clinical reports directory
+│   │   ├── ReportViewPage.tsx            # Digital clinical report viewer
+│   │   ├── ResultEntryPage.tsx           # Pathologist test result data entry worksheet
+│   │   ├── ResultQueuePage.tsx           # Queue of orders ready for pathologist review
+│   │   ├── SampleIntakePage.tsx          # Lab technician sample accessioning & logging
+│   │   ├── StaffDirectoryPage.tsx        # Staff directory with ISA subtype filtering
+│   │   └── StyleGuidePage.tsx            # Living design system preview & component catalog
+│   ├── services\
+│   │   ├── adminService.ts               # API service: staff, laboratories, and demo reset
+│   │   ├── analyticsService.ts           # API service: operational KPI summary metrics
+│   │   ├── catalogueService.ts           # API service: test catalogue queries and mutations
+│   │   ├── doctorService.ts              # API service: referring physician lookups
+│   │   ├── http.ts                       # The architectural seam: switches mock vs live fetch
+│   │   ├── index.ts                      # Service barrel exports
+│   │   ├── orderService.ts               # API service: orders, bookings, and cancellations
+│   │   ├── patientService.ts             # API service: patients and contact numbers
+│   │   ├── reportService.ts              # API service: reports, pending queues, results
+│   │   └── sampleService.ts              # API service: sample accessioning and tracking
+│   ├── styles\
+│   │   ├── base.css                      # Global base styles, scrollbars, and resets
+│   │   ├── landing.css                   # Custom visual styles for the 3D landing page
+│   │   ├── print.css                     # Dedicated print stylesheet for clinical A4 reports
+│   │   └── tokens.css                    # Semantic design tokens (surfaces, text, accents, flags)
+│   ├── types\
+│   │   ├── analytics.ts                  # WorkspaceSummary domain types
+│   │   ├── auth.ts                       # Roles, permissions, session models, and Zod schemas
+│   │   ├── catalogue.ts                  # Test, TestCategory, SpecimenType, Modality models
+│   │   ├── common.ts                     # Paginated<T>, ApiError, and common utility types
+│   │   ├── doctor.ts                     # Doctor and specialization models
+│   │   ├── index.ts                      # Barrel export of all domain types
+│   │   ├── laboratory.ts                 # Laboratory facility models
+│   │   ├── order.ts                      # TestOrder, OrderStatus, OrderIncludesTest models
+│   │   ├── patient.ts                    # Patient, PatientContact, Gender models
+│   │   ├── report.ts                     # Report, HasResult, Remark, PendingResultItem models
+│   │   ├── sample.ts                     # Sample, SampleType, SampleStatus models
+│   │   └── staff.ts                      # LabStaff, LabTechnician, Pathologist models
+│   ├── index.css                         # Tailwind CSS v4 root import
+│   ├── main.tsx                          # React 19 application mounting point
+│   └── vite-env.d.ts                     # Vite environment type declarations
+├── tsconfig.app.json                     # Application TypeScript compiler options
+├── tsconfig.json                         # Project TypeScript reference config
+├── tsconfig.node.json                    # Vite config TypeScript compiler options
+└── vite.config.ts                        # Vite bundler configuration & path aliases
+
+================================================================================
+3. TECHNOLOGY STACK & DEPENDENCY INVENTORY
+================================================================================
+Core Platform:
+  - React 19.2.8: Cutting-edge concurrent rendering and state handling.
+  - TypeScript ~6.0.2: Full strict type-checking (`noUncheckedIndexedAccess`).
+  - Vite 8.2.2: Blazing fast ESM development and production bundler.
+  - Tailwind CSS 4.3.3: Native CSS-first utility framework integrated via `@tailwindcss/vite`.
+
+Routing, State & Forms:
+  - React Router DOM 7.18.3: Client-side routing with nested routes and guards.
+  - TanStack React Query 5.102.8: Async server-state management, cache invalidation.
+  - React Hook Form 7.87.0 + @hookform/resolvers 3.10.0: Controlled form state.
+  - Zod 3.25.76: Runtime schema validation and TypeScript type inference.
+
+UI Primitives & Styling:
+  - Radix UI Primitives: Fully accessible headless components (Dialog, DropdownMenu,
+    Select, Tabs, Toast, Tooltip, Checkbox, RadioGroup, Switch, Popover, Separator).
+  - Lucide React 1.42.0: Comprehensive, modern icon set.
+  - clsx 2.1.1 + tailwind-merge 3.6.0: Robust utility class merging.
+  - Motion 12.43.0: Fluid UI animations and transitions.
+  - @fontsource-variable/inter 5.3.0: Clean, clinical sans-serif variable typography.
+
+Visualization & Graphics:
+  - vgpu 0.3.1: WebGPU shader pipeline powering interactive 3D landing elements.
+  - HTML5 Canvas 2D: Resilient fallback renderer for systems without WebGPU.
+  - Recharts 3.10.1: Charting library ready for advanced visual metrics.
+  - date-fns 4.4.0: Modern immutable date parsing and manipulation.
+
+Code Quality & Tooling:
+  - Oxlint 1.79.0: Ultra-fast Rust-based linter.
+
+================================================================================
+4. DATABASE SCHEMA & DOMAIN DATA MODELS (DBMS MAPPING)
+================================================================================
+The application types mirror the relational database schema exactly:
+
+1. Patient & Patient_Contact
+   - Table `Patient`: `Patient_ID` (PK), `First_Name`, `Last_Name`, `DOB`, `Gender` ('M' | 'F' | 'O')
+   - Table `Patient_Contact`: `Patient_ID` (FK), `Contact_No` (Regex: `^[6-9]\d{9}$`)
+
+2. Test (Generalization / Specialization)
+   - Table `Test`: `Test_ID` (PK), `Test_Name`, `Test_Category` ('Pathology' | 'Radiology'), `Price` (INR), `Unit`
+   - Specialization `PathologyTest`: carries `Specimen_Type` ('Blood', 'Serum', 'Urine', 'Tissue', 'Stool', 'Swab')
+   - Specialization `RadiologyTest`: carries `Imaging_Modality` ('X-Ray', 'MRI', 'CT Scan', 'Ultrasound', 'Mammography')
+
+3. Doctor (Referring Physician)
+   - Table `Doctor`: `Doctor_ID` (PK), `Doctor_Name`, `Specialization`
+
+4. TestOrder & OrderIncludesTest
+   - Table `TestOrder`: `Order_ID` (PK), `Order_Date`, `Patient_ID` (FK), `Doctor_ID` (FK),
+     `Status` ('Pending' | 'Processing' | 'Completed' | 'Cancelled'), `Total_Price`
+   - Table `OrderIncludesTest`: `Order_ID` (FK), `Test_ID` (FK)
+
+5. Laboratory (Facility)
+   - Table `Laboratory`: `Lab_ID` (PK), `Lab_Name`, `Location`, `Contact_No`
+
+6. LabStaff (ISA Hierarchy)
+   - Table `LabStaff`: `Staff_ID` (PK), `Staff_Name`, `Shift` ('Morning' | 'Evening' | 'Night' | 'General'), `Staff_Role`
+   - Subtype `LabTechnician`: `Tech_ID` (Shared PK/FK), `Certification`
+   - Subtype `Pathologist`: `Pathologist_ID` (Shared PK/FK), `License_No`, `Qualification`
+
+7. Sample (Specimen Collection)
+   - Table `Sample`: `Sample_No` (Per-order sequence: S1, S2...), `Order_ID` (FK), `Patient_ID` (FK),
+     `Sample_Type`, `Collection_DateTime`, `Lab_ID` (FK), `Tech_ID` (FK),
+     `Status` ('Collected' | 'In Transit' | 'Received' | 'Rejected')
+
+8. Report & HasResult
+   - Table `Report`: `Report_ID` (PK), `Order_ID` (FK), `Report_Date` (Nullable while draft),
+     `Patient_ID` (FK), `Doctor_ID` (FK), `Pathologist_ID` (FK)
+   - Table `HasResult`: `Report_ID` (FK), `Test_ID` (FK), `Observed_Value` (string to support '<0.01' or '>1000'),
+     `Unit`, `Remark` ('Normal' | 'Elevated' | 'Critical')
+
+================================================================================
+5. SYSTEM ROLES, PERMISSIONS & WORKSPACES
+================================================================================
+The application is governed by 4 distinct roles and 11 granular permissions:
+
+Granular Permissions:
+  - `patient:read`, `patient:write`
+  - `catalogue:read`, `catalogue:write`
+  - `order:read`, `order:create`
+  - `sample:read`, `sample:write`
+  - `report:read`, `report:write`
+  - `staff:manage`
+
+Role Matrix:
+1. Administrator (`admin`)
+   - Permissions: Full access to all 11 permissions.
+   - Dedicated Workspace (`/admin`): Complete operational dashboard featuring
+     live patient counts, order pipeline status, booked revenue metrics, sample
+     status distribution, and diagnostic findings breakdown.
+   - Quick administrative actions: Register patient, add staff, add laboratory,
+     manage test catalogue.
+
+2. Patient (`patient`)
+   - Permissions: `catalogue:read`, `order:read`, `order:create`, `report:read`
+   - Dedicated Workspace (`/patient`): "My Health Record" portal strictly scoped to
+     the logged-in patient's `Patient_ID`.
+   - Features: View past orders, track live sample progress, access and download/print
+     final diagnostic reports, book new tests self-service.
+   - Security Boundary: Prevented from accessing the global patient directory or
+     other patients' records via `usePatientScope`.
+
+3. Lab Technician (`technician`)
+   - Permissions: `patient:read`, `catalogue:read`, `order:read`, `sample:read`, `sample:write`
+   - Dedicated Workspace (`/lab-tech`): Sample collection dispatch board.
+   - Features: Monitors orders pending sample collection, accessioning interface,
+     logs new samples with auto-incrementing IDs (`S1`, `S2`), assigns samples to
+     laboratories, tracks delivery status.
+
+4. Pathologist (`pathologist`)
+   - Permissions: `patient:read`, `catalogue:read`, `order:read`, `sample:read`, `report:read`, `report:write`
+   - Dedicated Workspace (`/pathologist`): Clinical diagnostic workbench.
+   - Features: Pending review queue of orders with collected specimens, tabular
+     result entry, clinical remark assignment, electronic authorization and report
+     issuance.
+
+================================================================================
+6. CORE FUNCTIONAL MODULES & FEATURES
+================================================================================
+
+MODULE 1: PATIENT & ORDER MANAGEMENT
+------------------------------------
+- Patient Directory (`/patients`): Search by name, MRN/Patient_ID, or mobile number;
+  filter by gender; sort by name or order history; pagination (12/page); row actions
+  to edit or delete (with foreign key checks).
+- Patient Registration (`/patients/new`): 3-step interactive wizard using Stepper
+  (Step 1: Name, DOB, Gender; Step 2: Dynamic contact numbers list; Step 3: Review
+  and confirm).
+- Patient Profile (`/patients/:id`): Full patient demographics, emergency contacts,
+  and complete historical timeline of test orders and statuses.
+- Test Catalogue (`/catalogue`): Browsable grid of diagnostic investigations categorized
+  into Pathology and Radiology; displays specimen types or imaging modalities, units,
+  and prices; administrator modal to create/update/delete tests.
+- Order Booking (`/orders/new`): Real-time interactive ordering interface; searchable
+  catalogue with spotlight cards; live shopping cart recalculating order total in INR;
+  referring doctor selection; single-click order generation.
+- Order Dashboard (`/orders` & `/orders/:id`): Tabbed status filtering (All, Pending,
+  Processing, Completed, Cancelled); cancel and delete capabilities; detailed view
+  displaying ordered tests, associated samples, and direct report link.
+
+MODULE 2: LAB TECHNICIAN & SAMPLE INTAKE
+----------------------------------------
+- Sample Intake & Accessioning (`/samples`):
+  - Order lookup with auto-population of patient details.
+  - Automatic suggestion of sequential sample identifier (`nextSampleNo`: S1, S2...).
+  - Selection of sample specimen type (Whole Blood, Serum, Plasma, Urine, Stool, etc.).
+  - Intake collection timestamp with validation preventing future timestamps.
+  - Assigned laboratory facility and collecting technician.
+  - Immediate logging and status updates (`Collected`, `In Transit`, `Received`, `Rejected`).
+  - Historical sample accession log with pagination and order filtering.
+
+MODULE 3: PATHOLOGIST & RESULT ENTRY
+------------------------------------
+- Worklist / Result Queue (`/results`):
+  - Displays all orders whose samples have been collected and are ready for analysis.
+  - Ordered chronologically (oldest collection first) to prioritize turnaround time.
+  - Shows patient details, test count, and sample count.
+- Result Entry Worksheet (`/results/:reportId`):
+  - Dedicated clinical worksheet presenting every test included in the order.
+  - Numeric/text observed value input.
+  - Standardized units (e.g., mg/dL, g/dL, cells/uL).
+  - Pathologist clinical judgement selector: `Normal`, `Elevated`, or `Critical`.
+  - Report Authorization: On submission, automatically issues the report, records
+    pathologist identity and credentials, sets `Report_Date`, and transitions the
+    order status to `Completed`.
+
+MODULE 4: REPORT VIEWER & PRINT ENGINE
+--------------------------------------
+- Report Directory (`/reports`): Searchable directory of issued diagnostic reports
+  with summary findings badges (Normal / Elevated / Critical counts).
+- Digital Report Viewer (`/reports/:reportId`): High-fidelity clinical report rendering
+  hospital letterhead, accreditation numbers (NABL), patient metadata, referring
+  doctor, structured test findings table, and pathologist authorization block.
+- Zero-Dependency Print Engine (`/reports/:reportId/print`):
+  - Renders outside the application shell (no sidebar or top bar).
+  - Uses specialized A4 print stylesheet (`src/styles/print.css`).
+  - Native browser Print / Save-as-PDF integration with repeated table headers,
+    page break protections, and high-contrast clinical print formatting.
+
+MODULE 5: ADMINISTRATION & FACILITY MANAGEMENT
+----------------------------------------------
+- Staff Directory (`/admin/staff`):
+  - Tabbed viewing by staff role: All, Technician, Pathologist.
+  - Displays work shifts (Morning, Evening, Night, General).
+  - Dynamic Staff Form Dialog: Automatically toggles specialization fields
+    (Certification for Technicians; License No and Qualification for Pathologists).
+  - Conflict-safe deletion (refuses deletion if staff is tied to samples or reports).
+- Laboratory Locations (`/admin/labs`):
+  - Manages processing facilities across regions.
+  - Tracks facility name, physical location, and contact numbers.
+  - Create, update, and delete laboratory facilities.
+- Operational Analytics:
+  - System-wide KPIs: Total registered patients, active tests, staff count, facilities count.
+  - Order pipeline status breakdown bar.
+  - 7-day order booking volume and booked revenue in INR.
+  - Sample pipeline status breakdown (Collected, In Transit, Received, Rejected).
+  - Clinical findings distribution (Normal vs Elevated vs Critical).
+
+================================================================================
+7. API CONTRACT & SERVICE LAYER (THE INTEGRATION SEAM)
+================================================================================
+The service layer (`src/services/`) encapsulates all asynchronous communication.
+The core engine is `src/services/http.ts`:
+
+```
+UI Components -> TanStack Query -> Service Methods -> http.ts -> Mock DB Handler
+                                                               -> Live REST API (fetch)
+```
+
+Configuration via `.env`:
+  - `VITE_API_MODE=mock`: Routes requests to the internal in-memory mock engine.
+  - `VITE_API_MODE=live`: Directly issues `fetch()` calls to `VITE_API_BASE_URL`.
+  - `VITE_API_BASE_URL=http://localhost:8080/api`: Backend endpoint base.
+
+Endpoints Defined in the Seam:
+  - `GET/POST /patients`, `GET/PATCH/DELETE /patients/:id`
+  - `GET /doctors`
+  - `GET/POST /tests`, `PATCH/DELETE /tests/:id`
+  - `GET/POST /orders`, `GET/DELETE /orders/:id`, `PATCH /orders/:id/cancel`
+  - `GET/POST /samples`
+  - `GET /reports`, `GET /reports/:id`, `GET /pending-results`, `PUT /reports/:id/results`
+  - `GET /laboratories`, `POST /laboratories`, `PATCH/DELETE /laboratories/:id`
+  - `GET /staff`, `POST /staff`, `PATCH/DELETE /staff/:id`
+  - `GET /analytics/summary`
+  - `POST /demo/reset`
+
+================================================================================
+8. MOCK DATA ENGINE & PERSISTENCE
+================================================================================
+The project features a deterministic, realistic mock engine:
+- Seeded PRNG (`src/mock/rng.ts`): Uses a fixed seed (Lehmer LCG) so that initial
+  loads always generate identical, reproducible clinical records.
+- Realistic Dataset (`src/mock/seed.ts`):
+  - 48 realistic Indian patient profiles with valid phone numbers and birth dates.
+  - 12 certified laboratory staff (8 Technicians across shifts, 4 Pathologists).
+  - 4 processing laboratory centers across Bengaluru.
+  - 8 referring medical doctors spanning 7 specialties.
+  - 28 diagnostic tests (Pathology & Radiology) with authentic pricing and units.
+  - ~180 test orders spanning 180 days with associated samples and reports.
+- State Persistence (`src/mock/db.ts`):
+  - Edits made during user sessions (booking orders, collecting samples, entering
+    results) persist in `sessionStorage`.
+  - A "Reset demo data" action enables restoring pristine factory seed state.
+- Simulated Network Conditions (`src/mock/latency.ts`):
+  - Injects realistic random latency (180ms to 450ms).
+  - Provides hooks to simulate slow connections and server errors for QA testing.
+
+================================================================================
+9. DESIGN SYSTEM, UI COMPONENTS & LOCALIZATION
+================================================================================
+Design Principles:
+- Hairline Borders Over Heavy Shadows: Creates clean, dense medical-grade surfaces.
+- Multi-Signal Accessibility: Colors are always paired with text or glyphs.
+- Clinical Color Tokens (`tokens.css`):
+  - Surfaces: Canvas (`#fcfcfd`), Surface (`#ffffff`), Inset (`#f9fafb`), Hairlines (`#e4e7ec`).
+  - Accents: Deep clinical blue (`#0b5fa5`).
+  - Result Flags: Normal (Muted), Low (Blue), High (Amber), Critical (Crimson).
+  - Pipeline Statuses: Pending, Collected, Received, Processing, Completed, Rejected.
+
+UI Primitive Library (21 Components in `src/components/ui/`):
+  Button, Input, Select, Checkbox, RadioGroup, Switch, Textarea, Field, Dialog,
+  DropdownMenu, Popover, Tabs, Toast, Tooltip, Badge, Skeleton, Spinner, Surface,
+  Separator, Kbd, and Table.
+
+Indian Localization Standards (`src/lib/format.ts`):
+  - Currency: Indian Rupee (INR - e.g., ₹1,450), zero decimals.
+  - Dates: `dd MMM yyyy` (e.g., 14 Mar 2026), never ambiguous numerical dates.
+  - Timestamps: `dd MMM yyyy, HH:mm` in 24-hour format.
+  - Age: Calculated precisely from DOB (e.g., "34 y" or "8 mo" for infants).
+  - Phone Validation: 10-digit mobile starting with 6, 7, 8, or 9.
+
+================================================================================
+10. ROUTE HIERARCHY & NAVIGATION MAP
+================================================================================
+Public Routes:
+  - `/login`: 3D landing page with AeroShards GPU animation and role selection.
+
+Guarded Application Shell (`/`):
+  - `/`: Redirects dynamically to the active role workspace (`ROLE_HOME`).
+  - Workspaces:
+    - `/admin`: Administrator dashboard (requires `staff:manage`)
+    - `/patient`: Patient health record portal (requires role `patient`)
+    - `/lab-tech`: Technician collection queue (requires `sample:write`)
+    - `/pathologist`: Pathologist diagnostic workbench (requires `report:write`)
+  - Module 1 (Patient & Orders):
+    - `/patients`: Registered patients directory (`patient:read`)
+    - `/patients/new`: 3-step patient registration form (`patient:write`)
+    - `/patients/:patientId`: Patient profile and order history (`patient:read`)
+    - `/catalogue`: Diagnostic test catalogue (`catalogue:read`)
+    - `/orders`: Orders management list (`order:read`)
+    - `/orders/new`: Interactive test booking wizard (`order:create`)
+    - `/orders/:orderId`: Order details, sample status & report link (`order:read`)
+  - Module 2 (Technician):
+    - `/samples`: Sample accessioning and intake board (`sample:read`)
+  - Module 3 (Pathologist):
+    - `/results`: Pending analysis queue (`report:write`)
+    - `/results/:reportId`: Result worksheet and entry (`report:write`)
+  - Module 4 (Reports):
+    - `/reports`: Diagnostic reports directory (`report:read`)
+    - `/reports/:reportId`: Clinical report viewer (`report:read`)
+  - Module 5 (Administration):
+    - `/admin/staff`: Staff directory and ISA management (`staff:manage`)
+    - `/admin/labs`: Laboratory facility locations (`staff:manage`)
+  - Developer Tools:
+    - `/design-system`: Interactive component style guide (DEV mode only)
+  - Error & Fallback:
+    - `/403`: Access forbidden
+    - `*`: 404 Not found
+
+Standalone Out-of-Shell Routes:
+  - `/reports/:reportId/print`: Dedicated print and PDF export route.
+
+================================================================================
+11. GETTING STARTED, BUILD & DEPLOYMENT INSTRUCTIONS
+================================================================================
+Prerequisites:
+  - Node.js 20.19+ or 22.12+ (built on Node v22)
+  - npm 10+
+
+Local Development:
+  1. Clone or navigate to the repository directory:
+     cd c:\dbms-diagnostic-lab-frontend
+  2. Install dependencies:
+     npm install
+  3. Launch local Vite development server:
+     npm run dev
+  4. Access in browser:
+     http://localhost:5173
+
+Available Scripts:
+  - `npm run dev`: Starts Vite dev server with hot-module reloading.
+  - `npm run build`: Executes TypeScript compilation (`tsc -b`) and bundles for production into `dist/`.
+  - `npm run preview`: Serves the production build locally with SPA history rewrites.
+  - `npm run lint`: Runs fast static code analysis via oxlint.
+
+Connecting to Real Backend:
+  Edit `.env` in the project root:
+  ```
+  VITE_API_MODE=live
+  VITE_API_BASE_URL=http://your-backend-host:8080/api
+  ```
+  No component, service, or configuration code needs to be modified.
+
+Production Deployment Notes:
+  - As a single-page application using HTML5 history routing, your production
+    web server (Nginx, Caddy, Apache, or AWS S3/CloudFront) must rewrite all
+    non-file routes to `/index.html`:
+    
+    Example Nginx configuration:
+    location / {
+      try_files $uri $uri/ /index.html;
+    }
+
+================================================================================
+End of Meridian Diagnostics Project Specification Document
+================================================================================
+

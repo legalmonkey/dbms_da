@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap');
+@import '@fontsource-variable/inter';
+@import 'tailwindcss';
+
+@import './styles/tokens.css';
+@import './styles/base.css';
+@import './styles/print.css';
+@import './styles/landing.css';
+
+/* Dark mode is driven by data-theme on <html>, set by ThemeProvider.
+   Not by prefers-color-scheme alone, so the user's explicit choice wins. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-inset: var(--surface-inset);
+
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-disabled: var(--fg-disabled);
+  --color-fg-on-accent: var(--fg-on-accent);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-border: var(--accent-border);
+
+  --color-flag-normal: var(--flag-normal);
+  --color-flag-low: var(--flag-low);
+  --color-flag-low-bg: var(--flag-low-bg);
+  --color-flag-high: var(--flag-high);
+  --color-flag-high-bg: var(--flag-high-bg);
+  --color-flag-critical: var(--flag-critical);
+  --color-flag-critical-bg: var(--flag-critical-bg);
+
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-border: var(--danger-border);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-info-border: var(--info-border);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-grid: var(--chart-grid);
+
+  /* Dense type scale. 11 / 12 / 13 / 14 / 16 / 20 / 24 / 30 */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-13: 0.8125rem;
+  --text-13--line-height: 1.25rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.875rem;
+  --text-2xl--line-height: 2.25rem;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', Menlo, monospace;
+
+  /* Restraint: 4px on controls, 6px on containers. Nothing rounder. */
+  --radius-control: 4px;
+  --radius-surface: 6px;
+
+  --shadow-overlay: var(--shadow-overlay);
+  --shadow-popover: var(--shadow-popover);
+
+  /* 120–180ms, ease-out. */
+  --ease-out-quick: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer utilities {
+  /* Row height tokens: 40px pointer, 48px touch. */
+  .row-h { height: 2.5rem; }
+  @media (pointer: coarse) {
+    .row-h { height: 3rem; }
+  }
+}

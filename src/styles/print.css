@@ -1,0 +1,117 @@
+/* ---------------------------------------------------------------------------
+ * Print layer: A4 clinical report output.
+ *
+ * The /reports/:id/print route renders bare (no app chrome), but these rules
+ * also make any page print sanely. Report-specific structure lives in the
+ * report components; this file owns page geometry and global print policy.
+ * ------------------------------------------------------------------------- */
+
+@page {
+  size: A4;
+  margin: 18mm 16mm;
+}
+
+@media print {
+  :root,
+  [data-theme='dark'] {
+    /* Never print the dark theme. Ink is expensive and contrast inverts badly. */
+    color-scheme: light;
+    --canvas: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --surface-3: #ffffff;
+    --hairline: #b8bfc9;
+    --hairline-strong: #6b7480;
+    --fg: #000000;
+    --fg-secondary: #23282f;
+    --fg-muted: #3d444d;
+    --accent: #000000;
+    --flag-normal: #000000;
+    --flag-low: #00308f;
+    --flag-high: #8a3400;
+    --flag-critical: #8f0f06;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    font-size: 10.5pt;
+    line-height: 1.4;
+  }
+
+  /* Anything chrome-like disappears. Components opt out with .print-only. */
+  [data-print='hide'],
+  nav,
+  aside,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: revert !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Result rows must never be split across a page boundary. */
+  tr,
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Column headers repeat on every printed page. */
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+
+  h1, h2, h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Signature and verification blocks stay whole. */
+  .report-verification {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Hairlines survive printer colour reduction. */
+  table,
+  th,
+  td {
+    border-color: #b8bfc9 !important;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  /* Expose destinations for links that leave the document. */
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 8pt;
+    color: #3d444d;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

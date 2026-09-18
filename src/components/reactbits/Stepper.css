@@ -1,0 +1,148 @@
+/*
+ * React Bits Stepper, adapted to the clinical token layer.
+ * Upstream: https://reactbits.dev/r/Stepper-TS-CSS.json
+ *
+ * Removed from upstream: the #5227FF purple, 9999px pill buttons and circular
+ * step indicators, the 2rem rounded container with its drop shadow, and the
+ * fixed 4:3 / 2:1 aspect ratios (a form's height is set by its fields, not by
+ * the viewport). Colour now comes from data-status plus theme tokens rather
+ * than hex values baked into animation variants.
+ */
+
+.outer-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.step-circle-container {
+  width: 100%;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-surface);
+  background-color: var(--surface);
+}
+
+.step-indicator-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.step-content-default {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Horizontal padding leaves room for input focus rings, which would
+   otherwise be clipped by the overflow on the sliding container. */
+.step-default {
+  padding: 1rem 1.25rem 0.5rem;
+}
+
+.footer-container {
+  padding: 0 1.25rem 1.25rem;
+}
+
+.footer-nav {
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid var(--hairline);
+  padding-top: 1rem;
+}
+
+.footer-nav.spread {
+  justify-content: space-between;
+}
+
+.footer-nav.end {
+  justify-content: flex-end;
+}
+
+/* --- Step indicators ---------------------------------------------------- */
+
+.step-indicator {
+  position: relative;
+  flex: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: default;
+}
+
+.step-indicator[data-clickable='true'] {
+  cursor: pointer;
+}
+
+.step-indicator:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+.step-indicator-inner {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--surface-3);
+  color: var(--fg-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition:
+    background-color 200ms var(--ease-out-quick),
+    border-color 200ms var(--ease-out-quick),
+    color 200ms var(--ease-out-quick);
+}
+
+.step-indicator[data-status='active'] .step-indicator-inner {
+  border-color: var(--accent);
+  background-color: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.step-indicator[data-status='complete'] .step-indicator-inner {
+  border-color: var(--accent);
+  background-color: var(--accent);
+  color: var(--fg-on-accent);
+}
+
+.active-dot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 2px;
+  background-color: var(--accent);
+}
+
+.step-number {
+  font-variant-numeric: tabular-nums;
+}
+
+.step-connector {
+  position: relative;
+  margin: 0 0.5rem;
+  height: 2px;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 1px;
+  background-color: var(--hairline);
+}
+
+.step-connector-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background-color: var(--accent);
+}
+
+.check-icon {
+  height: 0.875rem;
+  width: 0.875rem;
+}

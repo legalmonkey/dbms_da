@@ -1,0 +1,47 @@
+/*
+ * React Bits SpotlightCard, adapted to the clinical token layer.
+ * Upstream: https://reactbits.dev/r/SpotlightCard-TS-CSS.json
+ *
+ * Changes from upstream: hardcoded #111/#222 dark surface replaced with theme
+ * tokens so it works in light and dark; 1.5rem radius reduced to the surface
+ * token; fixed 2rem padding removed so each usage sets its own density; content
+ * lifted above the highlight layer so the gradient never sits on top of text.
+ */
+.card-spotlight {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-surface);
+  background-color: var(--surface);
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --spotlight-color: color-mix(in oklab, var(--accent) 14%, transparent);
+  transition: border-color 150ms var(--ease-out-quick);
+}
+
+.card-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x) var(--mouse-y),
+    var(--spotlight-color),
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out-quick);
+  pointer-events: none;
+}
+
+.card-spotlight > * {
+  position: relative;
+}
+
+.card-spotlight:hover {
+  border-color: var(--hairline-strong);
+}
+
+.card-spotlight:hover::before,
+.card-spotlight:focus-within::before {
+  opacity: 1;
+}

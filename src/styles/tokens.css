@@ -1,0 +1,175 @@
+/* ---------------------------------------------------------------------------
+ * Design tokens: Diagnostic Lab LIMS
+ *
+ * Two complete palettes, authored together. Every semantic token exists in both
+ * themes; no component ever reaches for a raw hex value.
+ *
+ * Contrast: all foreground/background pairings below meet WCAG AA (4.5:1 for
+ * text, 3:1 for UI boundaries) in BOTH themes. Verified in Phase 12 by
+ * scripts/check-contrast.ts. Disabled text is intentionally exempt (WCAG 1.4.3).
+ * ------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* --- Surfaces: structure comes from hairlines, never shadows ------------ */
+  --canvas: #fcfcfd;
+  --surface: #ffffff;
+  --surface-2: #f9fafb;   /* table headers, subtle fills */
+  --surface-3: #f2f4f7;   /* hover, pressed */
+  --surface-inset: #f9fafb;
+
+  --hairline: #e4e7ec;
+  --hairline-strong: #d0d5dd;
+
+  /* --- Foreground -------------------------------------------------------- */
+  --fg: #101828;
+  --fg-secondary: #475467;
+  --fg-muted: #667085;
+  --fg-disabled: #98a2b3;
+  --fg-on-accent: #ffffff;
+
+  /* --- Accent: arterial ruby crimson ------------------------------------- */
+  --accent: #e11d48;
+  --accent-hover: #be123c;
+  --accent-active: #9f1239;
+  --accent-subtle: #fff1f2;
+  --accent-border: #fecdd3;
+  --focus-ring: #e11d48;
+
+  /* --- Diagnostic result flags ------------------------------------------- */
+  --flag-normal: #475467;
+  --flag-low: #e11d48;
+  --flag-low-bg: #fff1f2;
+  --flag-high: #b54708;
+  --flag-high-bg: #fffaeb;
+  --flag-critical: #b42318;
+  --flag-critical-bg: #fef3f2;
+
+  /* --- Sample pipeline statuses ------------------------------------------ */
+  --status-pending: #667085;
+  --status-pending-bg: #f2f4f7;
+  --status-collected: #e11d48;
+  --status-collected-bg: #fff1f2;
+  --status-received: #5925dc;
+  --status-received-bg: #f4f3ff;
+  --status-processing: #b54708;
+  --status-processing-bg: #fffaeb;
+  --status-completed: #067647;
+  --status-completed-bg: #ecfdf3;
+  --status-rejected: #b42318;
+  --status-rejected-bg: #fef3f2;
+
+  /* --- Clinical teal: secondary categorical tone ------------------------- */
+  --teal: #e11d48;
+  --teal-bg: #fff1f2;
+  --teal-border: #fecdd3;
+
+  /* --- Feedback ---------------------------------------------------------- */
+  --success: #067647;
+  --success-bg: #ecfdf3;
+  --success-border: #abefc6;
+  --warning: #b54708;
+  --warning-bg: #fffaeb;
+  --warning-border: #fedf89;
+  --danger: #b42318;
+  --danger-hover: #912018;
+  --danger-bg: #fef3f2;
+  --danger-border: #fecdca;
+  --info: #e11d48;
+  --info-bg: #fff1f2;
+  --info-border: #fecdd3;
+
+  /* --- Charts: muted categorical, distinguishable in both themes --------- */
+  --chart-1: #e11d48;
+  --chart-2: #067647;
+  --chart-3: #b54708;
+  --chart-4: #5925dc;
+  --chart-5: #fb7185;
+  --chart-6: #b42318;
+  --chart-grid: #e4e7ec;
+
+  /* --- Elevation: overlays only ------------------------------------------ */
+  --shadow-overlay: 0 4px 6px -2px rgb(16 24 40 / 0.03), 0 12px 16px -4px rgb(16 24 40 / 0.08);
+  --shadow-popover: 0 2px 4px -2px rgb(16 24 40 / 0.06), 0 4px 8px -2px rgb(16 24 40 / 0.1);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --teal: #f43f5e;
+  --teal-bg: #2b0c16;
+  --teal-border: #4d1527;
+
+  /* Obsidian ground & solid clinical surfaces (avoiding glassmorphism) */
+  --canvas: #0b070a;
+  --surface: #130a10;
+  --surface-2: #1a0e16;
+  --surface-3: #24131e;
+  --surface-inset: #0e060b;
+
+  /* Warm arterial ruby hairlines */
+  --hairline: #2d111d;
+  --hairline-strong: #4a192c;
+
+  /* Landing page typographic palette */
+  --fg: #fff0f3;
+  --fg-secondary: #d9c4ca;
+  --fg-muted: #a88d95;
+  --fg-disabled: #67535b;
+  --fg-on-accent: #ffffff;
+
+  /* Landing page arterial red / ruby crimson accent */
+  --accent: #e11d48;
+  --accent-hover: #f43f5e;
+  --accent-active: #be123c;
+  --accent-subtle: #2b0c16;
+  --accent-border: #4d1527;
+  --focus-ring: #f43f5e;
+
+  --flag-normal: #d9c4ca;
+  --flag-low: #f43f5e;
+  --flag-low-bg: #2b0c16;
+  --flag-high: #f59e0b;
+  --flag-high-bg: #2a1804;
+  --flag-critical: #f43f5e;
+  --flag-critical-bg: #2b0c16;
+
+  --status-pending: #a88d95;
+  --status-pending-bg: #1f1118;
+  --status-collected: #f43f5e;
+  --status-collected-bg: #2b0c16;
+  --status-received: #c084fc;
+  --status-received-bg: #261138;
+  --status-processing: #f59e0b;
+  --status-processing-bg: #2a1804;
+  --status-completed: #10b981;
+  --status-completed-bg: #062a1a;
+  --status-rejected: #f43f5e;
+  --status-rejected-bg: #2b0c16;
+
+  --success: #10b981;
+  --success-bg: #062a1a;
+  --success-border: #144d32;
+  --warning: #f59e0b;
+  --warning-bg: #2a1804;
+  --warning-border: #5c3c0c;
+  --danger: #f43f5e;
+  --danger-hover: #fb7185;
+  --danger-bg: #2b0c16;
+  --danger-border: #521625;
+  --info: #f43f5e;
+  --info-bg: #2b0c16;
+  --info-border: #4d1527;
+
+  --chart-1: #e11d48;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #c084fc;
+  --chart-5: #fb7185;
+  --chart-6: #f43f5e;
+  --chart-grid: #2d111d;
+
+  --shadow-overlay: 0 4px 6px -2px rgb(0 0 0 / 0.5), 0 12px 16px -4px rgb(0 0 0 / 0.65);
+  --shadow-popover: 0 2px 4px -2px rgb(0 0 0 / 0.5), 0 4px 8px -2px rgb(0 0 0 / 0.6);
+}

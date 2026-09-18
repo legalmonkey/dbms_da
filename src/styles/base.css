@@ -1,0 +1,129 @@
+/* ---------------------------------------------------------------------------
+ * Base layer: element defaults, focus policy, motion policy.
+ * ------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--canvas);
+  color: var(--fg);
+  font-family: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 0.875rem;   /* 14px: dense UI baseline */
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Lab values are read in columns. Proportional digits make them unreadable. */
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: 'cv05' 1, 'ss01' 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.011em;
+}
+
+p { margin: 0; }
+
+button, input, select, textarea {
+  font: inherit;
+  font-variant-numeric: inherit;
+  color: inherit;
+}
+
+table { border-collapse: collapse; border-spacing: 0; }
+
+/* Every interactive element gets the same visible ring. No exceptions, and
+   never `outline: none` without a replacement. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Radix sets data-state on open triggers; keep them legible. */
+[data-disabled],
+:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background-color: var(--accent-subtle);
+  color: var(--fg);
+}
+
+/* Scrollbars: thin and neutral, matched to theme. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip link: first focusable element in the document. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background-color: var(--accent);
+  color: var(--fg-on-accent);
+  border-radius: 0 0 4px 0;
+  font-weight: 500;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Overlay motion. 120–160ms, opacity plus a 2px lift. Nothing decorative.
+ * ------------------------------------------------------------------------- */
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes content-in {
+  from { opacity: 0; transform: translateY(2px) scale(0.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.anim-overlay[data-state='open'] {
+  animation: overlay-in 120ms var(--ease-out-quick);
+}
+
+.anim-content[data-state='open'] {
+  animation: content-in 160ms var(--ease-out-quick);
+}
+
+.anim-toast[data-state='open'] {
+  animation: toast-in 160ms var(--ease-out-quick);
+}
