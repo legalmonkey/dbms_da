@@ -13,7 +13,7 @@
 
 ---
 
-## Overview
+## Overview 
 
 Meridian Diagnostics LIS is designed to digitize end-to-end diagnostic clinical workflows across pathology laboratories and radiology imaging centers. Built with strict adherence to clinical data governance and transactional integrity, the system coordinates patients, referring physicians, phlebotomists, medical laboratory technicians, and consultant pathologists.
 
