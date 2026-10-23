@@ -23,6 +23,7 @@ import { ReportViewPage } from '@/pages/ReportViewPage'
 import { ReportPrintPage } from '@/pages/ReportPrintPage'
 import { StaffDirectoryPage } from '@/pages/StaffDirectoryPage'
 import { LaboratoriesPage } from '@/pages/LaboratoriesPage'
+import { GraphIntelligencePage } from '@/pages/GraphIntelligencePage'
 import { RequireAuth, RequirePermission, RequireRole } from './guards'
 import { RoleLanding } from './RoleLanding'
 import type { Permission } from '@/types'
@@ -81,6 +82,7 @@ export const router = createBrowserRouter([
 
       // --- Module 2: Lab Technician ---------------------------------------
       { path: 'samples', element: guarded('sample:read', <SampleIntakePage />) },
+      { path: 'graph', element: guarded('sample:read', <GraphIntelligencePage />) },
 
       // --- Module 3: Pathologist ------------------------------------------
       { path: 'results', element: guarded('report:write', <ResultQueuePage />) },

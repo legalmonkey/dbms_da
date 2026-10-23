@@ -9,3 +9,5 @@ export * from './order'
 export * from './sample'
 export * from './report'
 export * from './analytics'
+export * from './graph'
+

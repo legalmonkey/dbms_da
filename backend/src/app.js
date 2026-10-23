@@ -4,6 +4,7 @@ const helmet = require('helmet');
 require('dotenv').config();
 
 const { checkDatabaseConnection } = require('./config/db');
+const { checkNeo4jConnection } = require('./config/neo4j');
 const { notFoundHandler } = require('./middleware/notFoundMiddleware');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
@@ -17,6 +18,7 @@ const laboratoryRoutes = require('./routes/laboratoryRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const graphRoutes = require('./routes/graphRoutes');
 const reportController = require('./controllers/reportController');
 
 const app = express();
@@ -27,7 +29,18 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
 app.use(
   cors({
-    origin: corsOrigin.includes(',') ? corsOrigin.split(',').map((o) => o.trim()) : corsOrigin,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const allowedList = (process.env.CORS_ORIGIN || '*').split(',').map((o) => o.trim());
+      if (
+        allowedList.includes('*') ||
+        allowedList.includes(origin) ||
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -38,26 +51,33 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------------------
-// HEALTH CHECK ENDPOINT
+// HEALTH CHECK ENDPOINT (Polyglot: Relational + Neo4j Graph)
 // -----------------------------------------------------------------------------
 app.get('/api/health', async (req, res) => {
   const systemName = process.env.SYSTEM_NAME || 'Meridian Diagnostics LIS/LIMS';
-  const dbHealth = await checkDatabaseConnection();
+  const [dbHealth, neo4jHealth] = await Promise.all([
+    checkDatabaseConnection(),
+    checkNeo4jConnection(),
+  ]);
 
-  if (dbHealth.connected) {
-    return res.status(200).json({
-      success: true,
-      message: 'Backend and database are connected',
-      system: systemName,
-      timestamp: new Date().toISOString(),
-    });
-  }
+  const allConnected = dbHealth.connected && neo4jHealth.connected;
+  const status = dbHealth.connected ? 200 : 503;
 
-  return res.status(503).json({
-    success: false,
-    message: 'Database connection failed',
+  return res.status(status).json({
+    success: dbHealth.connected,
+    message: dbHealth.connected ? 'Backend and database are connected' : 'Database connection issues detected',
     system: systemName,
-    error: dbHealth.message || 'Unable to connect to Oracle database',
+    relationalDb: {
+      connected: dbHealth.connected,
+      engine: 'Oracle / SQL*Plus',
+      status: dbHealth.status || dbHealth.message,
+    },
+    graphDb: {
+      connected: neo4jHealth.connected,
+      engine: 'Neo4j Graph Database (Bolt)',
+      address: neo4jHealth.address || 'Disconnected',
+      version: neo4jHealth.version,
+    },
     timestamp: new Date().toISOString(),
   });
 });
@@ -84,6 +104,7 @@ app.use('/api/reports', reportRoutes);
 // Direct mounting for exact contract path: /api/pending-results
 app.get('/api/pending-results', reportController.getPendingResults);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/graph', graphRoutes);
 
 // -----------------------------------------------------------------------------
 // ERROR HANDLING MIDDLEWARES

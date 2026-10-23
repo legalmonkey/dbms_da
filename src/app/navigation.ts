@@ -5,6 +5,7 @@ import {
   FlaskConical,
   LayoutDashboard,
   Microscope,
+  Network,
   TestTubes,
   Users,
   UsersRound,
@@ -66,6 +67,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/samples', label: 'Sample intake', icon: FlaskConical, permission: 'sample:read' },
       { to: '/results', label: 'Result entry', icon: Microscope, permission: 'report:write' },
+      { to: '/graph', label: 'Graph intelligence', icon: Network, permission: 'sample:read' },
     ],
   },
   {

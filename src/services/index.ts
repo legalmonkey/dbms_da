@@ -7,3 +7,5 @@ export * from './sampleService'
 export * from './reportService'
 export * from './adminService'
 export * from './analyticsService'
+export * from './graphService'
+

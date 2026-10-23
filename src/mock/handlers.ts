@@ -981,6 +981,171 @@ export const routes: Route[] = [
       return { ok: true }
     },
   },
+
+  // ---------- Neo4j Graph Engine ----------
+  {
+    method: 'GET',
+    pattern: '/graph/overview',
+    handler: () => ({
+      connected: true,
+      address: 'bolt://localhost:7687',
+      version: 'Neo4j 5.26 Enterprise / Community',
+      source: 'live-neo4j',
+      summary: {
+        totalNodes: 21,
+        totalRelationships: 21,
+        nodeLabels: { Patient: 5, Sample: 4, Test: 5, Staff: 3, Equipment: 3, Doctor: 2 },
+        relationshipTypes: { PROVIDED: 4, PROCESSED_ON: 3, ANALYZED_FOR: 5, OPERATED: 2, COLLECTED: 4, FAMILY_MEMBER_OF: 2, REFERRED: 2 },
+      },
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/graph/network',
+    handler: () => ({
+      nodes: [
+        { id: 'EQ-COBAS-01', label: 'Cobas c311 Autoanalyzer', type: 'Equipment', group: 'equipment', status: 'ALERT_CONTAMINATED', labId: 'LAB-01' },
+        { id: 'EQ-XN550-01', label: 'Sysmex XN-550 Hematology', type: 'Equipment', group: 'equipment', status: 'OPERATIONAL', labId: 'LAB-01' },
+        { id: 'EQ-PCR-01', label: 'BioRad CFX96 Real-Time PCR', type: 'Equipment', group: 'equipment', status: 'OPERATIONAL', labId: 'LAB-02' },
+        { id: 'P-1001', label: 'Eleanor Vance', type: 'Patient', group: 'patient', gender: 'Female', bloodGroup: 'A+', risk: 'High' },
+        { id: 'P-1002', label: 'Thomas Vance', type: 'Patient', group: 'patient', gender: 'Male', bloodGroup: 'A+', risk: 'Moderate' },
+        { id: 'P-1003', label: 'Clara Vance', type: 'Patient', group: 'patient', gender: 'Female', bloodGroup: 'O+', risk: 'High' },
+        { id: 'P-1004', label: 'Marcus Brody', type: 'Patient', group: 'patient', gender: 'Male', bloodGroup: 'B+', risk: 'Low' },
+        { id: 'P-1005', label: 'Sarah Chen', type: 'Patient', group: 'patient', gender: 'Female', bloodGroup: 'AB+', risk: 'Low' },
+        { id: 'SMP-8001', label: 'Sample #8001 (Serum)', type: 'Sample', group: 'sample', status: 'At Risk', specimen: 'Serum' },
+        { id: 'SMP-8002', label: 'Sample #8002 (EDTA Blood)', type: 'Sample', group: 'sample', status: 'Verified', specimen: 'Whole Blood' },
+        { id: 'SMP-8003', label: 'Sample #8003 (Serum)', type: 'Sample', group: 'sample', status: 'At Risk', specimen: 'Serum' },
+        { id: 'SMP-8004', label: 'Sample #8004 (Swab)', type: 'Sample', group: 'sample', status: 'Verified', specimen: 'Swab' },
+        { id: 'STF-301', label: 'Dr. Alistair Finch', type: 'Staff', group: 'staff', role: 'Chief Pathologist' },
+        { id: 'STF-302', label: 'Elena Rostova', type: 'Staff', group: 'staff', role: 'Senior Lab Technician' },
+        { id: 'STF-303', label: 'David Kim', type: 'Staff', group: 'staff', role: 'Phlebotomist / Tech' },
+        { id: 'DOC-201', label: 'Dr. Sophia Reyes', type: 'Doctor', group: 'doctor', specialization: 'Endocrinology' },
+        { id: 'DOC-202', label: 'Dr. James Thorne', type: 'Doctor', group: 'doctor', specialization: 'Internal Medicine' },
+        { id: 'TST-101', label: 'HbA1c Glycated Hemoglobin', type: 'Test', group: 'test', category: 'Biochemistry', code: 'GLYC-01' },
+        { id: 'TST-102', label: 'Complete Blood Count (CBC)', type: 'Test', group: 'test', category: 'Hematology', code: 'HEM-CBC' },
+        { id: 'TST-103', label: 'Comprehensive Lipid Profile', type: 'Test', group: 'test', category: 'Biochemistry', code: 'LIPID-04' },
+        { id: 'TST-104', label: 'Renal Function Panel (KFT)', type: 'Test', group: 'test', category: 'Biochemistry', code: 'REN-02' },
+      ],
+      links: [
+        { source: 'P-1001', target: 'SMP-8001', label: 'PROVIDED', type: 'PROVIDED' },
+        { source: 'P-1002', target: 'SMP-8003', label: 'PROVIDED', type: 'PROVIDED' },
+        { source: 'P-1004', target: 'SMP-8002', label: 'PROVIDED', type: 'PROVIDED' },
+        { source: 'P-1005', target: 'SMP-8004', label: 'PROVIDED', type: 'PROVIDED' },
+        { source: 'SMP-8001', target: 'EQ-COBAS-01', label: 'PROCESSED_ON', type: 'PROCESSED_ON' },
+        { source: 'SMP-8003', target: 'EQ-COBAS-01', label: 'PROCESSED_ON', type: 'PROCESSED_ON' },
+        { source: 'SMP-8002', target: 'EQ-XN550-01', label: 'PROCESSED_ON', type: 'PROCESSED_ON' },
+        { source: 'STF-302', target: 'EQ-COBAS-01', label: 'OPERATED', type: 'OPERATED' },
+        { source: 'STF-302', target: 'EQ-XN550-01', label: 'OPERATED', type: 'OPERATED' },
+        { source: 'STF-303', target: 'SMP-8001', label: 'COLLECTED', type: 'COLLECTED' },
+        { source: 'STF-303', target: 'SMP-8003', label: 'COLLECTED', type: 'COLLECTED' },
+        { source: 'SMP-8001', target: 'TST-101', label: 'ANALYZED_FOR', type: 'ANALYZED_FOR' },
+        { source: 'SMP-8001', target: 'TST-103', label: 'ANALYZED_FOR', type: 'ANALYZED_FOR' },
+        { source: 'SMP-8003', target: 'TST-103', label: 'ANALYZED_FOR', type: 'ANALYZED_FOR' },
+        { source: 'SMP-8002', target: 'TST-102', label: 'ANALYZED_FOR', type: 'ANALYZED_FOR' },
+        { source: 'DOC-201', target: 'P-1001', label: 'REFERRED', type: 'REFERRED' },
+        { source: 'DOC-201', target: 'TST-101', label: 'ORDERED', type: 'ORDERED' },
+        { source: 'DOC-202', target: 'P-1002', label: 'REFERRED', type: 'REFERRED' },
+        { source: 'STF-301', target: 'TST-101', label: 'VERIFIED', type: 'VERIFIED' },
+        { source: 'P-1001', target: 'P-1002', label: 'FAMILY_MEMBER_OF', type: 'FAMILY_MEMBER_OF', relation: 'PARENT' },
+        { source: 'P-1001', target: 'P-1003', label: 'FAMILY_MEMBER_OF', type: 'FAMILY_MEMBER_OF', relation: 'SIBLING' },
+      ],
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/graph/contamination',
+    handler: ({ query }) => {
+      const eqId = query.get('equipmentId') || 'EQ-COBAS-01'
+      return {
+        incidentEquipment: {
+          id: eqId,
+          name: 'Roche Cobas c311 Autoanalyzer',
+          status: 'ALERT_CONTAMINATED',
+          labId: 'LAB-01',
+        },
+        affectedSamplesCount: 2,
+        affectedPatientsCount: 2,
+        exposedSamples: [
+          { sampleNo: 'SMP-8001', type: 'Serum', patientId: 'P-1001', patientName: 'Eleanor Vance', testAffected: 'HbA1c & Lipid Panel' },
+          { sampleNo: 'SMP-8003', type: 'Serum', patientId: 'P-1002', patientName: 'Thomas Vance', testAffected: 'Lipid Panel' },
+        ],
+        involvedStaff: [
+          { id: 'STF-302', name: 'Elena Rostova', role: 'Senior Lab Technician', shift: 'Morning' },
+        ],
+        cypherQuery: `MATCH (eq:Equipment {id: '${eqId}'})<-[:PROCESSED_ON]-(s:Sample)<-[:PROVIDED]-(p:Patient) RETURN eq, collect(s), collect(p)`,
+        executionTimeMs: 1.4,
+        justification: 'Index-free adjacency navigated direct pointer links in 1.4ms without scanning millions of unrelated sample records.',
+      }
+    },
+  },
+  {
+    method: 'GET',
+    pattern: '/graph/hereditary',
+    handler: ({ query }) => {
+      const ptId = query.get('patientId') || 'P-1001'
+      return {
+        indexPatient: { id: ptId, name: 'Eleanor Vance', riskProfile: 'High' },
+        familyMembersCount: 2,
+        relatives: [
+          {
+            id: 'P-1002',
+            name: 'Thomas Vance',
+            relation: 'OFFSPRING / CHILD',
+            bloodGroup: 'A+',
+            recommendedScreenings: ['HbA1c Glycated Hemoglobin', 'Comprehensive Lipid Profile'],
+            inheritedRiskLevel: 'Moderate to High (Maternal History)',
+          },
+          {
+            id: 'P-1003',
+            name: 'Clara Vance',
+            relation: 'SIBLING',
+            bloodGroup: 'O+',
+            recommendedScreenings: ['Lipid Profile', 'Cardiovascular Risk Panel'],
+            inheritedRiskLevel: 'High (Familial Cohort)',
+          },
+        ],
+        cypherQuery: `MATCH (p:Patient {id: '${ptId}'})-[f:FAMILY_MEMBER_OF*1..2]-(relative:Patient) RETURN p, relative, f`,
+        executionTimeMs: 1.1,
+      }
+    },
+  },
+  {
+    method: 'GET',
+    pattern: '/graph/co-occurrence',
+    handler: () => [
+      { testA: 'HbA1c Glycated Hemoglobin', testB: 'Comprehensive Lipid Profile', frequency: 142, category: 'Metabolic Syndrome Panel' },
+      { testA: 'Complete Blood Count (CBC)', testB: 'Renal Function Panel (KFT)', frequency: 98, category: 'Pre-Operative Panel' },
+      { testA: 'Complete Blood Count (CBC)', testB: 'HbA1c Glycated Hemoglobin', frequency: 84, category: 'Routine Health Check' },
+      { testA: 'Comprehensive Lipid Profile', testB: 'Liver Function Test (LFT)', frequency: 65, category: 'Cardiometabolic Risk' },
+    ],
+  },
+  {
+    method: 'POST',
+    pattern: '/graph/cypher',
+    handler: ({ body }) => {
+      const { query = '' } = (body as { query?: string }) || {}
+      return {
+        success: true,
+        source: 'simulated-engine',
+        cypher: query,
+        executionTimeMs: 1.8,
+        recordsCount: 3,
+        records: [
+          { Node: 'EQ-COBAS-01', Type: 'Equipment', AdjacentNodesCount: 3, LatencyMs: '0.4ms' },
+          { Node: 'SMP-8001', Type: 'Sample', ChainDepth: '1-hop pointer', Status: 'Analyzed' },
+          { Node: 'P-1001', Type: 'Patient', RiskScore: 92, PedigreeRelation: 'Target' },
+        ],
+      }
+    },
+  },
+  {
+    method: 'POST',
+    pattern: '/graph/seed',
+    handler: () => ({
+      ok: true,
+      message: 'Neo4j clinical graph re-seeded with 21 nodes and 21 relationships.',
+    }),
+  },
 ]
 
 /** Match a request against the table above. */
